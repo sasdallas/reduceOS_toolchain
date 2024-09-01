@@ -1,0 +1,105 @@
+diff --git a/bfd/config.bfd b/bfd/config.bfd
+index a4c6c8e8854..bdeb245bdb8 100644
+--- a/bfd/config.bfd
++++ b/bfd/config.bfd
+@@ -1470,6 +1470,16 @@ case "${targ}" in
+     ;;
+ #endif
+ 
++  i[3-7]86-*reduceOS*)
++    targ_defvec=i386_elf32_vec
++    targ_selvecs=
++    targ64_selvecs=x86_64_elf64_vec
++    ;;
++#ifdef BFD64
++    x86_64-*-reduceOS*)
++      #error "*** reduceOS does not support x64 targets"
++      ;;
++#endif
+ # END OF targmatch.h
+   bpf-*-*)
+     echo "*** Configuration $targ is not fully supported." >&2
+diff --git a/config.sub b/config.sub
+index dba16e84c77..ab0d6e19d49 100755
+--- a/config.sub
++++ b/config.sub
+@@ -1754,7 +1754,7 @@ case $os in
+ 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
+ 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
+ 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
+-	     | fiwix* )
++	     | fiwix* | reduceOS*)
+ 		;;
+ 	# This one is extra strict with allowed versions
+ 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
+diff --git a/gas/configure.tgt b/gas/configure.tgt
+index 62f806bdfe8..5d0424bda1c 100644
+--- a/gas/configure.tgt
++++ b/gas/configure.tgt
+@@ -443,6 +443,7 @@ case ${generic_target} in
+   *-*-solaris*)				fmt=elf em=solaris ;;
+   *-*-aros*)				fmt=elf em=linux ;;
+   *-*-vxworks* | *-*-windiss)		fmt=elf em=vxworks ;;
++  i386-*-reduceOS*) fmt=elf ;;
+ esac
+ 
+ case ${cpu_type} in
+diff --git a/ld/Makefile.am b/ld/Makefile.am
+index d31021c13e2..9db0fc3c3a6 100644
+--- a/ld/Makefile.am
++++ b/ld/Makefile.am
+@@ -279,6 +279,7 @@ ALL_EMULATION_SOURCES = \
+ 	eelf_i386_fbsd.c \
+ 	eelf_i386_haiku.c \
+ 	eelf_i386_ldso.c \
++	eelf_i386_reduceOS.c \
+ 	eelf_i386_sol2.c \
+ 	eelf_i386_vxworks.c \
+ 	eelf_iamcu.c \
+diff --git a/ld/Makefile.in b/ld/Makefile.in
+index ee0c98f65b0..def6ef5fde5 100644
+--- a/ld/Makefile.in
++++ b/ld/Makefile.in
+@@ -529,6 +529,7 @@ pdfdir = @pdfdir@
+ prefix = @prefix@
+ program_transform_name = @program_transform_name@
+ psdir = @psdir@
++runstatedir = @runstatedir@
+ sbindir = @sbindir@
+ sharedstatedir = @sharedstatedir@
+ srcdir = @srcdir@
+@@ -776,6 +777,7 @@ ALL_EMULATION_SOURCES = \
+ 	eelf_i386_fbsd.c \
+ 	eelf_i386_haiku.c \
+ 	eelf_i386_ldso.c \
++	eelf_i386_reduceOS.c \
+ 	eelf_i386_sol2.c \
+ 	eelf_i386_vxworks.c \
+ 	eelf_iamcu.c \
+@@ -1445,6 +1447,7 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_fbsd.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_haiku.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_ldso.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_reduceOS.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_sol2.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_i386_vxworks.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf_iamcu.Po@am__quote@
+diff --git a/ld/configure.tgt b/ld/configure.tgt
+index 2bae9099b6a..509fd378921 100644
+--- a/ld/configure.tgt
++++ b/ld/configure.tgt
+@@ -789,6 +789,14 @@ powerpc-*-windiss*)	targ_emul=elf32ppcwindiss
+ 			;;
+ pru*-*-*)		targ_emul=pruelf
+ 			;;
++i[3-7]86-*-reduceOS*)
++			targ_emul=elf_i386_reduceOS
++			targ_extra_emuls=elf_i386
++			;;
++x86_64-*-reduceOS*)
++			#error "reduceOS does not support x64 builds"
++			;;
++
+ riscv32be*-*-linux*)	targ_emul=elf32briscv
+ 			targ_extra_emuls="elf32briscv_ilp32f elf32briscv_ilp32 elf64briscv elf64briscv_lp64f elf64briscv_lp64 elf32lriscv elf32lriscv_ilp32f elf32lriscv_ilp32 elf64lriscv elf64lriscv_lp64f elf64lriscv_lp64"
+ 			targ_extra_libpath=$targ_extra_emuls
