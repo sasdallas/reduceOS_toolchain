@@ -103,3 +103,11 @@ index 2bae9099b6a..509fd378921 100644
  riscv32be*-*-linux*)	targ_emul=elf32briscv
  			targ_extra_emuls="elf32briscv_ilp32f elf32briscv_ilp32 elf64briscv elf64briscv_lp64f elf64briscv_lp64 elf32lriscv elf32lriscv_ilp32f elf32lriscv_ilp32 elf64lriscv elf64lriscv_lp64f elf64lriscv_lp64"
  			targ_extra_libpath=$targ_extra_emuls
+diff --git a/ld/emulparams/elf_i386_reduceOS.sh b/ld/emulparams/elf_i386_reduceOS.sh
+new file mode 100644
+index 00000000000..06482257cff
+--- /dev/null
++++ b/ld/emulparams/elf_i386_reduceOS.sh
+@@ -0,0 +1,2 @@
++source_sh ${srcdir}/emulparams/elf_i386.sh
++TEXT_START_ADDR=0x08000000
